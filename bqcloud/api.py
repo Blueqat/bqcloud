@@ -2,7 +2,9 @@
 import json
 import os
 import urllib.request
-from typing import Any
+from typing import Any, List
+
+from .task import Task
 
 API_ENDPOINT = "https://cloudapi.blueqat.com/v1/"
 
@@ -35,6 +37,16 @@ class Api:
         """Get credit."""
         path = "credit/get"
         return self.post_request(path, {})["amount"]
+
+    def tasks(self, index: int) -> List[Task]:
+        """Get tasks."""
+        path = "quantum-tasks/list"
+        body = {
+            "index": index,
+        }
+        tasks = self.post_request(path, body)
+        assert isinstance(tasks, list)
+        return [Task(self, **task) for task in tasks]
 
 
 def load_api() -> Api:
