@@ -5,8 +5,9 @@ import urllib.request
 from typing import Any, List
 
 from .task import Task
+from .annealing import AnnealingTask, AnnealingResult
 
-API_ENDPOINT = "https://cloudapi.blueqat.com/v1/"
+API_ENDPOINT = "https://cloudapi.blueqat.com/"
 
 
 class Api:
@@ -35,12 +36,33 @@ class Api:
 
     def credit(self) -> str:
         """Get credit."""
-        path = "credit/get"
+        path = "v1/credit/get"
         return self.post_request(path, {})["amount"]
+
+    def annealing(self, qubo: list[list[float]], chain_strength: int,
+                  num_reads: int) -> AnnealingResult:
+        """Create annealing task"""
+        path = "v1/quantum-tasks/create"
+        res = self.post_request(path, {
+            "qubo": qubo,
+            "chain_strength": chain_strength,
+            "num_reads": num_reads
+        })
+        return AnnealingResult(**res)
+
+    def annealing_tasks(self, index: int = 0) -> List[AnnealingTask]:
+        """Get tasks."""
+        path = "v1/quantum-tasks/list"
+        body = {
+            "index": index,
+        }
+        tasks = self.post_request(path, body)
+        assert isinstance(tasks, list)
+        return [AnnealingTask(self, **task) for task in tasks]
 
     def tasks(self, index: int) -> List[Task]:
         """Get tasks."""
-        path = "quantum-tasks/list"
+        path = "v2/quantum-tasks/list"
         body = {
             "index": index,
         }
