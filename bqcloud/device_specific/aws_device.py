@@ -1,19 +1,21 @@
+from typing import Optional
+
 from blueqat import Circuit
 from bqbraket import convert
 
 from braket.device_schema import GateModelParameters
 from braket.device_schema.ionq import IonqDeviceParameters
 from braket.device_schema.rigetti import RigettiDeviceParameters
-from braket.device_schema.simulators import GateModelSimulatorDeviceParameters
+#from braket.device_schema.simulators import GateModelSimulatorDeviceParameters
 
 from ..device import Device
 from ..task import TaskData
 
 
-def make_taskdata(c: Circuit, dev: Device, shots: int) -> TaskData:
+def make_taskdata(c: Circuit, dev: Device, shots: int, group: Optional[str]) -> TaskData:
     action = convert(c).to_ir().json()
     dev_params = make_device_params(c, dev)
-    return TaskData(str(dev), action, dev_params, shots)
+    return TaskData(str(dev), action, dev_params, shots, group)
 
 
 def make_device_params(c: Circuit, dev: Device) -> str:

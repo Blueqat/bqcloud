@@ -1,6 +1,7 @@
 """Module for task."""
 from .api import Api
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -9,6 +10,7 @@ class TaskData:
     action: str
     deviceParameters: str
     shots: int
+    group: Optional[str]
 
 
 class Task:
