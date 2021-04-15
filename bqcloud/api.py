@@ -2,10 +2,18 @@
 import json
 import os
 import urllib.request
-from typing import Any, List
+import typing
+from typing import Any, List, Optional, Type
 
-from .task import Task
 from .annealing import AnnealingTask, AnnealingResult
+from .data import ExecutionRequest, ExecutionRequestEncoder, TaskListData
+from .device import Device
+from .task import Task, TaskIter, TaskList
+
+from .taskdatafactory import make_executiondata
+
+if typing.TYPE_CHECKING:
+    from blueqat import Circuit
 
 API_ENDPOINT = "https://cloudapi.blueqat.com/"
 
@@ -15,14 +23,19 @@ class Api:
     def __init__(self, api_key: str):
         self.api_key = api_key
 
-    def post_request(self, path: str, body: Any) -> Any:
+    def post_request(
+            self,
+            path: str,
+            body: Any,
+            json_encoder: Optional[Type[json.JSONEncoder]] = None) -> Any:
         """Post request."""
         headers = {
             'Content-Type': 'application/json',
             'X-Api-Key': self.api_key,
         }
-        req = urllib.request.Request(API_ENDPOINT + path,
-                                     json.dumps(body).encode(), headers)
+        req = urllib.request.Request(
+            API_ENDPOINT + path,
+            json.dumps(body, cls=json_encoder).encode(), headers)
         with urllib.request.urlopen(req) as res:
             body = res.read()
         return json.loads(body)
@@ -39,6 +52,12 @@ class Api:
         path = "v1/credit/get"
         return self.post_request(path, {})["amount"]
 
+    def post_executiondata(self, execdata: ExecutionRequest) -> Task:
+        """Create new task"""
+        path = "v2/quantum-tasks/create"
+        res = self.post_request(path, execdata, json_encoder=ExecutionRequestEncoder)
+        return res
+
     def annealing(self, qubo: list[list[float]], chain_strength: int,
                   num_reads: int) -> AnnealingResult:
         """Create annealing task"""
@@ -50,6 +69,16 @@ class Api:
         })
         return AnnealingResult(**res)
 
+    def execute(self,
+                c: 'Circuit',
+                device: Device,
+                shots: int,
+                group: Optional[str] = None,
+                send_email: bool = False) -> Task:
+        """Create new task and execute the task."""
+        execdata = make_executiondata(c, device, shots, group, send_email)
+        return self.post_executiondata(execdata)
+
     def annealing_tasks(self, index: int = 0) -> List[AnnealingTask]:
         """Get tasks."""
         path = "v1/quantum-tasks/list"
@@ -60,15 +89,20 @@ class Api:
         assert isinstance(tasks, list)
         return [AnnealingTask(self, **task) for task in tasks]
 
-    def tasks(self, index: int) -> List[Task]:
+    def tasks(self, index: int = 0, per: Optional[int] = None) -> TaskList:
         """Get tasks."""
         path = "v2/quantum-tasks/list"
         body = {
             "index": index,
         }
+        if per is not None and per > 0:
+            body["per"] = per
         tasks = self.post_request(path, body)
-        assert isinstance(tasks, list)
-        return [Task(self, **task) for task in tasks]
+        return TaskList(self, TaskListData(**tasks), index, per)
+
+    def iter_tasks(self) -> TaskIter:
+        """Get paginator of tasks"""
+        return TaskIter(self)
 
 
 def load_api() -> Api:
