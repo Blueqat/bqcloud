@@ -59,7 +59,7 @@ class Status(str, Enum):
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
-    CANCELLING = "CANCELLED"
+    CANCELLING = "CANCELLING"
     CANCELLED = "CANCELLED"
 
     def is_done(self) -> bool:

@@ -6,7 +6,7 @@ import typing
 from typing import Any, List, Optional, Type
 
 from .annealing import AnnealingTask, AnnealingResult
-from .data import ExecutionRequest, ExecutionRequestEncoder, TaskListData
+from .data import ExecutionRequest, ExecutionRequestEncoder, Status, TaskListData
 from .device import Device
 from .task import Task, TaskIter, TaskList
 
@@ -52,10 +52,18 @@ class Api:
         path = "v1/credit/get"
         return self.post_request(path, {})["amount"]
 
+    def status(self, taskid: str) -> Status:
+        """Get task status."""
+        path = "v2/get/status"
+        res = self.post_request(path, {"id": taskid})
+        return Status(res['status'])
+
     def post_executiondata(self, execdata: ExecutionRequest) -> Task:
         """Create new task"""
         path = "v2/quantum-tasks/create"
-        res = self.post_request(path, execdata, json_encoder=ExecutionRequestEncoder)
+        res = self.post_request(path,
+                                execdata,
+                                json_encoder=ExecutionRequestEncoder)
         return res
 
     def annealing(self, qubo: list[list[float]], chain_strength: int,
@@ -89,20 +97,43 @@ class Api:
         assert isinstance(tasks, list)
         return [AnnealingTask(self, **task) for task in tasks]
 
-    def tasks(self, index: int = 0, per: Optional[int] = None) -> TaskList:
+    def tasks(self,
+              group: Optional[str] = None,
+              *,
+              index: int = 0,
+              per: Optional[int] = None,
+              option_fields: Optional[str] = None) -> TaskList:
         """Get tasks."""
         path = "v2/quantum-tasks/list"
         body = {
             "index": index,
-        }
+        }  # type: dict[str, Any]
         if per is not None and per > 0:
             body["per"] = per
+        if option_fields is not None:
+            body["optionFileds"] = option_fields
+        if group is not None:
+            body["taskGroup"] = group
         tasks = self.post_request(path, body)
-        return TaskList(self, TaskListData(**tasks), index, per)
+        return TaskList(self,
+                        tasklist=TaskListData(**tasks),
+                        group=group,
+                        index=index,
+                        per=per,
+                        option_fields=option_fields)
 
-    def iter_tasks(self) -> TaskIter:
+    def iter_tasks(self,
+                   group: Optional[str] = None,
+                   *,
+                   index: int = 0,
+                   per: Optional[int] = None,
+                   option_fields: Optional[str] = None) -> TaskIter:
         """Get paginator of tasks"""
-        return TaskIter(self)
+        return TaskIter(self,
+                        group=group,
+                        index=index,
+                        per=per,
+                        option_fields=option_fields)
 
 
 def load_api() -> Api:
