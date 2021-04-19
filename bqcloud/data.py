@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from json import JSONEncoder
-from typing import Optional, SupportsIndex
+from typing import Any, Optional, SupportsIndex
 
 
 @dataclass
@@ -36,13 +36,31 @@ class TaskData:
     """Internal data of task object."""
     id: str
     userId: str
-    action: str
+    action: Optional[str]
     device: str
-    deviceParameters: str
+    deviceParameters: Optional[str]
     shots: int
     createdAt: str
     updatedAt: str
+    taskGroup: Optional[str]
+    sendEmail: bool
     version: str
+
+    @staticmethod
+    def from_dict(d: dict[str, Any]) -> 'TaskData':
+        return TaskData(
+            id=d['id'],
+            userId=d['userId'],
+            action=d.get('action'),
+            device=d['device'],
+            deviceParameters=d.get('deviceParameters'),
+            shots=d['shots'],
+            createdAt=d['createdAt'],
+            updatedAt=d['updatedAt'],
+            taskGroup=d.get('taskGroup'),
+            sendEmail=d['sendEmail'],
+            version=d['version'],
+        )
 
 
 @dataclass

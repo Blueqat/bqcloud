@@ -6,7 +6,7 @@ import typing
 from typing import Any, List, Optional, Type
 
 from .annealing import AnnealingTask, AnnealingResult
-from .data import ExecutionRequest, ExecutionRequestEncoder, Status, TaskListData
+from .data import ExecutionRequest, ExecutionRequestEncoder, Status, TaskData, TaskListData
 from .device import Device
 from .task import Task, TaskIter, TaskList
 
@@ -54,7 +54,7 @@ class Api:
 
     def status(self, taskid: str) -> Status:
         """Get task status."""
-        path = "v2/get/status"
+        path = "v2/quantum-tasks/get/status"
         res = self.post_request(path, {"id": taskid})
         return Status(res['status'])
 
@@ -97,6 +97,15 @@ class Api:
         assert isinstance(tasks, list)
         return [AnnealingTask(self, **task) for task in tasks]
 
+    def result(self, task_id: str) -> dict[str, Any]:
+        """Get result."""
+        path = "v2/quantum-tasks/get"
+        body = {
+            "id": task_id,
+        }
+        tasks = self.post_request(path, body)
+        return tasks
+
     def tasks(self,
               group: Optional[str] = None,
               *,
@@ -115,6 +124,7 @@ class Api:
         if group is not None:
             body["taskGroup"] = group
         tasks = self.post_request(path, body)
+        tasks['tasks'] = [TaskData.from_dict(t) for t in tasks['tasks']]
         return TaskList(self,
                         tasklist=TaskListData(**tasks),
                         group=group,
