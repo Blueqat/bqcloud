@@ -10,7 +10,7 @@ from .data import ExecutionRequest, ExecutionRequestEncoder, Status, TaskData, T
 from .device import Device
 from .task import Task, TaskIter, TaskList
 
-from .taskdatafactory import make_executiondata
+from .datafactory import make_executiondata, make_result
 
 if typing.TYPE_CHECKING:
     from blueqat import Circuit
@@ -97,14 +97,17 @@ class Api:
         assert isinstance(tasks, list)
         return [AnnealingTask(self, **task) for task in tasks]
 
-    def result(self, task_id: str) -> Dict[str, Any]:
-        """Get result."""
+    def task_result(self, task_id: str) -> Task:
+        """Get a task and result from task ID."""
         path = "v2/quantum-tasks/get"
         body = {
             "id": task_id,
         }
-        tasks = self.post_request(path, body)
-        return tasks
+        task_result = self.post_request(path, body)
+        taskdata = TaskData.from_dict(task_result['task'])
+        result = make_result(task_result.get('result', {}),
+                             Device(taskdata.device))
+        return Task(self, taskdata, result)
 
     def tasks(self,
               group: Optional[str] = None,

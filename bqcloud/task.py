@@ -1,23 +1,44 @@
 """Module for task."""
+from time import sleep
 import typing
 from typing import List, Optional, SupportsIndex, overload
 
 from .data import Status, TaskData, TaskListData
 if typing.TYPE_CHECKING:
     from .api import Api
+    from .abstract_result import AbstractResult
 
 
 class Task:
     """Task."""
-    def __init__(self, api: 'Api', taskdata: TaskData) -> None:
+    def __init__(self,
+                 api: 'Api',
+                 taskdata: TaskData,
+                 result: Optional[AbstractResult] = None) -> None:
         self._api = api
-        self.data = taskdata
+        self.taskdata = taskdata
+        self.resultdata = result
 
     def status(self) -> Status:
-        return self._api.status(self.data.id)
+        return self._api.status(self.taskdata.id)
+
+    def update(self) -> None:
+        # TODO: Implement
+        pass
 
     def __repr__(self) -> str:
-        return f'Task({repr(self._api)}, {self.data})'
+        return f'Task({repr(self._api)}, {self.taskdata}, {self.resultdata})'
+
+    def wait(self, timeout: int = 0) -> None:  # TODO: return result
+        waiting_time = 5
+        elipsed = 0
+        while self.status().is_done():
+            t = min(timeout - waiting_time, waiting_time)
+            sleep(t)
+            elipsed += t
+            if timeout > 0 and elipsed > timeout:
+                return None
+        return None  # TODO: return result
 
 
 class TaskList:
