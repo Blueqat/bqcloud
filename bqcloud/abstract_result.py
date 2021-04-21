@@ -1,2 +1,6 @@
+import typing
+
 class AbstractResult:
-    pass
+    def shots(self) -> typing.Counter[str]:
+        """Get shots."""
+        raise NotImplementedError()

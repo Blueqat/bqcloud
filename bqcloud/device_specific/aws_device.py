@@ -43,6 +43,9 @@ class BraketResult(AbstractResult):
         jsonized = json.dumps(result_obj)
         self.result = GateModelQuantumTaskResult.from_string(jsonized)
 
+    def shots(self) -> typing.Counter[str]:
+        return self.result.measurement_counts
+
 
 def make_result(data: Dict[str, Any], _: 'Device') -> BraketResult:
     return BraketResult(data)

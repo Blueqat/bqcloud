@@ -33,6 +33,8 @@ class Task:
     def wait(self, timeout: int = 0) -> Optional['AbstractResult']:
         waiting_time = 5
         elipsed = 0
+        if self.resultdata:
+            return self.resultdata
         while not self.status().is_done():
             t = min(timeout - elipsed, waiting_time)
             sleep(t)
@@ -40,7 +42,6 @@ class Task:
             if timeout > 0 and elipsed >= timeout:
                 return None
         self.update()
-        print(self)
         return self.resultdata
 
 
