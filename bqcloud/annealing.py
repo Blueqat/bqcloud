@@ -1,18 +1,18 @@
 """Module for annealing"""
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Dict, List
 
 
 @dataclass
 class AnnealingResult:
     """Result for annealing."""
-    solutions: list[list[int]]
-    solutionCounts: list[int]
-    values: list[float]
+    solutions: List[List[int]]
+    solutionCounts: List[int]
+    values: List[float]
     variableCount: int
-    taskMetadata: dict[str, Any]
-    additionalMetadata: dict[str, Any]
+    taskMetadata: Dict[str, Any]
+    additionalMetadata: Dict[str, Any]
 
 
 class AnnealingTask:

@@ -3,7 +3,7 @@ import json
 import os
 import urllib.request
 import typing
-from typing import Any, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type
 
 from .annealing import AnnealingTask, AnnealingResult
 from .data import ExecutionRequest, ExecutionRequestEncoder, Status, TaskData, TaskListData
@@ -66,7 +66,7 @@ class Api:
                                 json_encoder=ExecutionRequestEncoder)
         return res
 
-    def annealing(self, qubo: list[list[float]], chain_strength: int,
+    def annealing(self, qubo: List[List[float]], chain_strength: int,
                   num_reads: int) -> AnnealingResult:
         """Create annealing task"""
         path = "v1/quantum-tasks/create"
@@ -97,7 +97,7 @@ class Api:
         assert isinstance(tasks, list)
         return [AnnealingTask(self, **task) for task in tasks]
 
-    def result(self, task_id: str) -> dict[str, Any]:
+    def result(self, task_id: str) -> Dict[str, Any]:
         """Get result."""
         path = "v2/quantum-tasks/get"
         body = {

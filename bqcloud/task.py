@@ -1,6 +1,6 @@
 """Module for task."""
 import typing
-from typing import Optional, SupportsIndex, overload
+from typing import List, Optional, SupportsIndex, overload
 
 from .data import Status, TaskData, TaskListData
 if typing.TYPE_CHECKING:
@@ -42,7 +42,7 @@ class TaskList:
         ...
 
     @overload
-    def __getitem__(self, idx: slice) -> list[Task]:
+    def __getitem__(self, idx: slice) -> List[Task]:
         ...
 
     def __getitem__(self, idx):

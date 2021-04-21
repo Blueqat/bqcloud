@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from json import JSONEncoder
-from typing import Any, Optional, SupportsIndex
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -47,7 +47,7 @@ class TaskData:
     version: str
 
     @staticmethod
-    def from_dict(d: dict[str, Any]) -> 'TaskData':
+    def from_dict(d: Dict[str, Any]) -> 'TaskData':
         return TaskData(
             id=d['id'],
             userId=d['userId'],
@@ -66,7 +66,7 @@ class TaskData:
 @dataclass
 class TaskListData:
     """List of tasks which returns from API"""
-    tasks: list[TaskData]
+    tasks: List[TaskData]
     count: int
 
 
