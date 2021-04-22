@@ -64,7 +64,10 @@ class Api:
         res = self.post_request(path,
                                 execdata,
                                 json_encoder=ExecutionRequestEncoder)
-        return res
+        taskdata = TaskData.from_dict(res['task'])
+        result = make_result(res.get('result', {}),
+                             Device(taskdata.device))
+        return Task(self, taskdata, result)
 
     def annealing(self, qubo: List[List[float]], chain_strength: int,
                   num_reads: int) -> AnnealingResult:

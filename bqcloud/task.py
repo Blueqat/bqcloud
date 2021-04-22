@@ -44,6 +44,9 @@ class Task:
         self.update()
         return self.resultdata
 
+    def result(self) -> Optional['AbstractResult']:
+        return self.resultdata
+
 
 class TaskList:
     """Task list."""

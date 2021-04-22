@@ -47,5 +47,8 @@ class BraketResult(AbstractResult):
         return self.result.measurement_counts
 
 
-def make_result(data: Dict[str, Any], _: 'Device') -> BraketResult:
+def make_result(data: Dict[str, Any], _: 'Device') -> Optional[BraketResult]:
+    taskmetadata = data.get('taskMetadata')
+    if not (taskmetadata and taskmetadata.get('id')):
+        return None
     return BraketResult(data)
