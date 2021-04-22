@@ -29,23 +29,51 @@ api = bqcloud.load_api()
 ## Create a task
 ```py
 from blueqat import Circuit
-from bqcloud import load_api
-from bqcloud.device import Device
+from bqcloud import load_api, Device
 api = load_api()
 
-api.execute(Circuit().h[0].cx[0, 1], Device.IonQDevice, 10)
+task = api.execute(Circuit().h[0].cx[0, 1], Device.IonQDevice, 10)
 ```
 
-## List of tasks
+### Show a status
 ```py
-tasks = api.tasks()
+print(task.status())
+```
+
+### Update a task
+```py
+task.update()
 ```
 
 ## Wait a task
 ```py
-# Wait until task is done.
-result = tasks[0].wait()
+# Wait until task is done. It may takes so long time.
+result = task.wait()
 print(result.shots())
+```
+
+```py
+# Wait 10 sec. If complete, result is returned, otherwise, None is returned.
+result = task.wait(timeout=10)
+if result:
+    print(result.shots())
+else:
+    print("timeout")
+```
+
+## Get fetched result again
+```py
+# Once updated or waited after task completed, task.result() returns the result.
+result = task.result()
+print(result.shots())
+```
+
+# List tasks
+```py
+tasks = api.tasks()
+print(list(tasks))
+if tasks[0].result() is not None:
+    print(tasks[0].result().shots())
 ```
 
 # Annealing
