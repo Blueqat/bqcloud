@@ -65,7 +65,10 @@ else:
 ```py
 # Once updated or waited after task completed, task.result() returns the result.
 result = task.result()
-print(result.shots())
+if result:
+    print(result.shots())
+else:
+    print("result is not fetched")
 ```
 
 # List tasks
