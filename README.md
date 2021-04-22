@@ -24,6 +24,24 @@ import bqcloud
 api = bqcloud.load_api()
 ```
 
+# Gate
+
+## Create a task
+```py
+from blueqat import Circuit
+from bqcloud import load_api, execute
+api = load_api()
+
+task = api.execute(Circuit().h[0].cx[0, 1], Device.IonQDevice, 10)
+```
+
+## Wait a task
+```py
+# Wait until task is done.
+result = task.wait()
+print(result.shots())
+```
+
 # Annealing
 ```py
 import bqcloud
