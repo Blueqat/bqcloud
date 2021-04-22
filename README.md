@@ -29,16 +29,22 @@ api = bqcloud.load_api()
 ## Create a task
 ```py
 from blueqat import Circuit
-from bqcloud import load_api, execute
+from bqcloud import load_api
+from bqcloud.device import Device
 api = load_api()
 
-task = api.execute(Circuit().h[0].cx[0, 1], Device.IonQDevice, 10)
+api.execute(Circuit().h[0].cx[0, 1], Device.IonQDevice, 10)
+```
+
+## List of tasks
+```py
+tasks = api.tasks()
 ```
 
 ## Wait a task
 ```py
 # Wait until task is done.
-result = task.wait()
+result = tasks[0].wait()
 print(result.shots())
 ```
 
