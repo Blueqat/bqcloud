@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 
 from blueqat import Circuit
 from bqbraket import convert
+from bqbraket.backend import BASIS
 
 from braket.device_schema import GateModelParameters
 from braket.device_schema.ionq import IonqDeviceParameters
@@ -21,7 +22,12 @@ if typing.TYPE_CHECKING:
 def make_executiondata(c: Circuit, dev: 'Device', shots: int,
                        group: Optional[str],
                        send_email: bool) -> ExecutionRequest:
-    action = convert(c).to_ir().json()
+    basis = ['cx']
+    if dev.value.startswith('IonQ'):
+        basis = BASIS['ionq']
+    elif dev.value.startswith('Aspen'):
+        basis = BASIS['rigetti']
+    action = convert(c, basis).to_ir().json()
     dev_params = make_device_params(c, dev)
     return ExecutionRequest(action, dev.value, dev_params, shots, group,
                             send_email)
