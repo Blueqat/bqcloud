@@ -4,11 +4,13 @@ import os
 import urllib.request
 import typing
 from typing import Any, Dict, List, Optional, Type
+import warnings
 
 from .annealing import AnnealingTask, AnnealingResult
 from .data import ExecutionRequest, ExecutionRequestEncoder, Status, TaskData, TaskListData
 from .device import Device
 from .task import Task, TaskIter, TaskList
+from .local import make_localtask
 
 from .datafactory import make_executiondata, make_result
 
@@ -87,6 +89,10 @@ class Api:
                 group: Optional[str] = None,
                 send_email: bool = False) -> Task:
         """Create new task and execute the task."""
+        if device.value == 'local':
+            if group is not None or send_email:
+                warnings.warn('Arguments `group` and `send_email` is ignored in local device.')
+            return make_localtask(c, shots)
         execdata = make_executiondata(c, device, shots, group, send_email)
         return self.post_executiondata(execdata)
 
