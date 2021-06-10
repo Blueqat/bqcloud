@@ -9,8 +9,24 @@ if typing.TYPE_CHECKING:
     from .abstract_result import AbstractResult
 
 
-class Task:
-    """Task."""
+class AbstractTask:
+    """Abstract task class."""
+    def status(self) -> Status:
+        """Return the status of task."""
+        raise NotImplementedError
+
+    def update(self) -> None:
+        """Fetch result and update task."""
+
+    def wait(self, timeout: int = 0) -> Optional['AbstractResult']:
+        """Wait the result."""
+
+    def result(self) -> Optional['AbstractResult']:
+        """Return the result if it is ready."""
+
+
+class CloudTask(AbstractTask):
+    """Task of Blueqat Cloud."""
     def __init__(self,
                  api: 'Api',
                  taskdata: TaskData,
@@ -28,7 +44,7 @@ class Task:
         self.resultdata = task.resultdata
 
     def __repr__(self) -> str:
-        return f'Task({repr(self._api)}, {self.taskdata}, {self.resultdata})'
+        return f'CloudTask({repr(self._api)}, {self.taskdata}, {self.resultdata})'
 
     def wait(self, timeout: int = 0) -> Optional['AbstractResult']:
         waiting_time = 5
@@ -55,18 +71,18 @@ class TaskList:
                  option_fields: Optional[str]) -> None:
         self._api = api
         self.count = tasklist.count
-        self.tasklist = [Task(api, taskdata) for taskdata in tasklist.tasks]
+        self.tasklist = [CloudTask(api, taskdata) for taskdata in tasklist.tasks]
         self.group = group
         self.index = index
         self.per = per
         self.option_fields = option_fields
 
     @overload
-    def __getitem__(self, idx: SupportsIndex) -> Task:
+    def __getitem__(self, idx: SupportsIndex) -> CloudTask:
         ...
 
     @overload
-    def __getitem__(self, idx: slice) -> List[Task]:
+    def __getitem__(self, idx: slice) -> List[CloudTask]:
         ...
 
     def __getitem__(self, idx):
@@ -104,7 +120,7 @@ class TaskIter:
     def __iter__(self) -> 'TaskIter':
         return self
 
-    def __next__(self) -> Task:
+    def __next__(self) -> CloudTask:
         try:
             task = self.tasklist[self.next_i]
         except IndexError:

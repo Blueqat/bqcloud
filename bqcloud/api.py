@@ -9,12 +9,13 @@ import warnings
 from .annealing import AnnealingTask, AnnealingResult
 from .data import ExecutionRequest, ExecutionRequestEncoder, Status, TaskData, TaskListData
 from .device import Device
-from .task import Task, TaskIter, TaskList
+from .task import CloudTask, TaskIter, TaskList
 from .local import make_localtask
 
 from .datafactory import make_executiondata, make_result
 
 if typing.TYPE_CHECKING:
+    from .task import AbstractTask
     from blueqat import Circuit
 
 API_ENDPOINT = "https://cloudapi.blueqat.com/"
@@ -60,7 +61,7 @@ class Api:
         res = self.post_request(path, {"id": taskid})
         return Status(res['status'])
 
-    def post_executiondata(self, execdata: ExecutionRequest) -> Task:
+    def post_executiondata(self, execdata: ExecutionRequest) -> 'AbstractTask':
         """Create new task"""
         path = "v2/quantum-tasks/create"
         res = self.post_request(path,
@@ -69,7 +70,7 @@ class Api:
         taskdata = TaskData.from_dict(res['task'])
         result = make_result(res.get('result', {}),
                              Device(taskdata.device))
-        return Task(self, taskdata, result)
+        return CloudTask(self, taskdata, result)
 
     def annealing(self, qubo: List[List[float]], chain_strength: int,
                   num_reads: int) -> AnnealingResult:
@@ -87,7 +88,7 @@ class Api:
                 device: Device,
                 shots: int,
                 group: Optional[str] = None,
-                send_email: bool = False) -> Task:
+                send_email: bool = False) -> 'AbstractTask':
         """Create new task and execute the task."""
         if device.value == 'local':
             if group is not None or send_email:
@@ -106,7 +107,7 @@ class Api:
         assert isinstance(tasks, list)
         return [AnnealingTask(self, **task) for task in tasks]
 
-    def task_result(self, task_id: str) -> Task:
+    def task_result(self, task_id: str) -> CloudTask:
         """Get a task and result from task ID."""
         path = "v2/quantum-tasks/get"
         body = {
@@ -116,7 +117,7 @@ class Api:
         taskdata = TaskData.from_dict(task_result['task'])
         result = make_result(task_result.get('result', {}),
                              Device(taskdata.device))
-        return Task(self, taskdata, result)
+        return CloudTask(self, taskdata, result)
 
     def tasks(self,
               group: Optional[str] = None,
