@@ -7,7 +7,7 @@ from blueqat import Circuit
 
 from .abstract_result import AbstractResult
 from .data import Status
-from .task import Task
+from .task import AbstractTask
 
 class LocalResult(AbstractResult):
     def __init__(self, shots: typing.Counter[str]):
@@ -16,7 +16,8 @@ class LocalResult(AbstractResult):
     def shots(self) -> typing.Counter[str]:
         return self._shots
 
-class LocalTask(Task):
+
+class LocalTask(AbstractTask):
     """Task for local simulator."""
     def __init__(self, circuit: Circuit, result: LocalResult) -> None:
         self.circuit = circuit
@@ -33,6 +34,10 @@ class LocalTask(Task):
 
     def wait(self, timeout: int = 0) -> Optional[AbstractResult]:
         return self.result
+
+    def result(self):
+        return self.result
+
 
 def make_localtask(c: Circuit, shots: int):
     return LocalTask(c, LocalResult(c.copy().m[:].run(shots=shots)))
