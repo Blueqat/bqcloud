@@ -1,3 +1,4 @@
+from collections import Counter
 import json
 import typing
 from typing import Any, Dict, Optional
@@ -48,9 +49,27 @@ class BraketResult(AbstractResult):
     def __init__(self, result_obj: Dict[str, Any]) -> None:
         jsonized = json.dumps(result_obj)
         self.result = GateModelQuantumTaskResult.from_string(jsonized)
+        self.ordered_shots = None
+
+    def _update_ordered_shots(self):
+        n_qubits = self.result.task_metadata.deviceParameters.paradigmParameters.qubitCount
+        if self.result.measured_qubits == list(range(n_qubits)):
+            self.ordered_shots = self.result.measurement_counts
+        else:
+            measured = self.result.measured_qubits
+            def conv(key):
+                out = ['0'] * n_qubits
+                for k, m in zip(key, measured):
+                    out[m] = k
+                return ''.join(out)
+
+            self.ordered_shots = Counter({conv(k): v for k, v in self.result.measurement_counts.items()})
 
     def shots(self) -> typing.Counter[str]:
-        return self.result.measurement_counts
+        if self.ordered_shots is None:
+            self._update_ordered_shots()
+
+        return self.ordered_shots
 
 
 def make_result(data: Dict[str, Any], _: 'Device') -> Optional[BraketResult]:
