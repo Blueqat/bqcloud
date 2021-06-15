@@ -88,13 +88,14 @@ class Api:
                 device: Device,
                 shots: int,
                 group: Optional[str] = None,
-                send_email: bool = False) -> 'AbstractTask':
+                send_email: bool = False,
+                options: Optional[Dict[str, Any]] = None) -> 'AbstractTask':
         """Create new task and execute the task."""
         if device.value == 'local':
             if group is not None or send_email:
                 warnings.warn('Arguments `group` and `send_email` is ignored in local device.')
             return make_localtask(c, shots)
-        execdata = make_executiondata(c, device, shots, group, send_email)
+        execdata = make_executiondata(c, device, shots, group, send_email, options)
         return self.post_executiondata(execdata)
 
     def annealing_tasks(self, index: int = 0) -> List[AnnealingTask]:

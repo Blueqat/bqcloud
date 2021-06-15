@@ -19,10 +19,13 @@ def make_executiondata(c: 'Circuit',
                        dev: Device,
                        shots: int,
                        group: Optional[str] = None,
-                       send_email: bool = False) -> ExecutionRequest:
+                       send_email: bool = False,
+                       options: Optional[Dict[str, Any]] = None) -> ExecutionRequest:
     """Make ExecutionData for send job to the server."""
+    if options is None:
+        options = {}
     if dev.value.startswith("aws/"):
-        return aws_device.make_executiondata(c, dev, shots, group, send_email)
+        return aws_device.make_executiondata(c, dev, shots, group, send_email, options)
     raise ValueError(f"Cannot make {str(dev)} device task")
 
 

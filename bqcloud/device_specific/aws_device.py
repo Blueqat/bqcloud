@@ -22,12 +22,16 @@ if typing.TYPE_CHECKING:
 
 def make_executiondata(c: Circuit, dev: 'Device', shots: int,
                        group: Optional[str],
-                       send_email: bool) -> ExecutionRequest:
+                       send_email: bool,
+                       options: Dict[str, Any]) -> ExecutionRequest:
     basis = ['cx']
-    if dev.value.startswith('IonQ'):
-        basis = BASIS['ionq']
-    elif dev.value.startswith('Aspen'):
-        basis = BASIS['rigetti']
+    if options.get('transpile', True):
+        if dev.value.startswith('IonQ'):
+            basis = BASIS['ionq']
+        elif dev.value.startswith('Aspen'):
+            basis = BASIS['rigetti']
+    else:
+        basis = None
     action = convert(c, basis).to_ir().json()
     dev_params = make_device_params(c, dev)
     return ExecutionRequest(action, dev.value, dev_params, shots, group,
