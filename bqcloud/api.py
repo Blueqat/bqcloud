@@ -3,14 +3,14 @@ import json
 import os
 import urllib.request
 import typing
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
 import warnings
 
 from .annealing import AnnealingTask, AnnealingResult
 from .data import ExecutionRequest, ExecutionRequestEncoder, Status, TaskData, TaskListData
 from .device import Device
-from .task import CloudTask, TaskIter, TaskList
-from .local import make_localtask
+from .task import CloudTask, CloudTaskOptions, TaskIter, TaskList
+from .local import make_localtask, LocalTaskOptions
 
 from .datafactory import make_executiondata, make_result
 
@@ -68,8 +68,7 @@ class Api:
                                 execdata,
                                 json_encoder=ExecutionRequestEncoder)
         taskdata = TaskData.from_dict(res['task'])
-        result = make_result(res.get('result', {}),
-                             Device(taskdata.device))
+        result = make_result(res.get('result', {}), Device(taskdata.device))
         return CloudTask(self, taskdata, result)
 
     def annealing(self, qubo: List[List[float]], chain_strength: int,
@@ -83,19 +82,19 @@ class Api:
         })
         return AnnealingResult(**res)
 
-    def execute(self,
-                c: 'Circuit',
-                device: Device,
-                shots: int,
-                group: Optional[str] = None,
-                send_email: bool = False,
-                options: Optional[Dict[str, Any]] = None) -> 'AbstractTask':
+    def execute(
+        self,
+        c: 'Circuit',
+        device: Device,
+        shots: int,
+        options: Union[LocalTaskOptions, CloudTaskOptions, None] = None
+    ) -> 'AbstractTask':
         """Create new task and execute the task."""
+        if options is None:
+            options = {}
         if device.value == 'local':
-            if group is not None or send_email:
-                warnings.warn('Arguments `group` and `send_email` is ignored in local device.')
-            return make_localtask(c, shots)
-        execdata = make_executiondata(c, device, shots, group, send_email, options)
+            return make_localtask(c, shots, options)
+        execdata = make_executiondata(c, device, shots, options)
         return self.post_executiondata(execdata)
 
     def annealing_tasks(self, index: int = 0) -> List[AnnealingTask]:
