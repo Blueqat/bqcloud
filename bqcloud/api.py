@@ -1,9 +1,10 @@
 """Module for manage API"""
 import json
-import os
+from pathlib import Path
+import re
 import urllib.request
 import typing
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, List, Optional, Type, Union
 import warnings
 
 from .annealing import AnnealingTask, AnnealingResult
@@ -43,12 +44,18 @@ class Api:
             body = res.read()
         return json.loads(body)
 
+    def save_to_file(self, suffix: str = '') -> None:
+        """Save API to file."""
+        key_path = _get_apikey_path(suffix)
+        parent_dir = key_path.parent
+        parent_dir.mkdir(exist_ok=True)
+        key_path.write_text(self.api_key)
+
     def save_api(self) -> None:
         """Save API to file."""
-        d = os.path.join(os.environ["HOME"], ".bqcloud")
-        os.makedirs(d, exist_ok=True)
-        with open(os.path.join(d, "api_key"), "w") as f:
-            f.write(self.api_key)
+        warnings.warn("Api.save_api is deprecated. Use Api.save_to_file.",
+                      DeprecationWarning)
+        self.save_to_file()
 
     def credit(self) -> str:
         """Get credit."""
@@ -159,14 +166,36 @@ class Api:
                         option_fields=option_fields)
 
 
-def load_api() -> Api:
+def create_api(api_key: str) -> Api:
+    """Create API from API key."""
+    return Api(api_key)
+
+
+def load_api(suffix: str = '') -> Api:
     """Load API from file."""
-    with open(os.path.join(os.environ["HOME"], ".bqcloud/api_key")) as f:
-        return Api(f.read().strip())
+    key_path = _get_apikey_path(suffix)
+    api_key = key_path.read_text().strip()
+    return create_api(api_key)
 
 
-def register_api(api_key: str) -> Api:
+def register_api(api_key: str, suffix: str = '') -> Api:
     """Save and return API."""
     api = Api(api_key)
-    api.save_api()
+    api.save_to_file(suffix)
     return api
+
+
+def _check_suffix(suffix: str) -> bool:
+    """Check validity of suffix"""
+    return bool(re.match('^[-_a-zA-Z0-9]*$', suffix))
+
+
+def _get_apikey_path(suffix: str) -> Path:
+    if not _check_suffix(suffix):
+        raise ValueError(f'Invalid suffix "{suffix}" is specified.')
+    base = Path.home().joinpath(".bqcloud")
+    if suffix:
+        key_path = base.joinpath("api_key_" + suffix)
+    else:
+        key_path = base.joinpath("api_key")
+    return key_path
