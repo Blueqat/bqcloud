@@ -18,16 +18,21 @@ from ..abstract_result import AbstractResult
 
 if typing.TYPE_CHECKING:
     from ..device import Device
+    from ..task import CloudTaskOptions
 
 
 def make_executiondata(c: Circuit, dev: 'Device', shots: int,
-                       group: Optional[str],
-                       send_email: bool) -> ExecutionRequest:
+                       group: Optional[str], send_email: bool,
+                       options: 'CloudTaskOptions') -> ExecutionRequest:
+    """Make a request for the cloud server."""
     basis = ['cx']
-    if dev.value.startswith('IonQ'):
-        basis = BASIS['ionq']
-    elif dev.value.startswith('Aspen'):
-        basis = BASIS['rigetti']
+    if options.get('transpile', True):
+        if dev.value.startswith('IonQ'):
+            basis = BASIS['ionq']
+        elif dev.value.startswith('Aspen'):
+            basis = BASIS['rigetti']
+    else:
+        basis = None
     action = convert(c, basis).to_ir().json()
     dev_params = make_device_params(c, dev)
     return ExecutionRequest(action, dev.value, dev_params, shots, group,
@@ -35,6 +40,7 @@ def make_executiondata(c: Circuit, dev: 'Device', shots: int,
 
 
 def make_device_params(c: Circuit, dev: 'Device') -> str:
+    """Make device parameters"""
     paradigm_params = GateModelParameters(qubitCount=c.n_qubits,
                                           disableQubitRewiring=False)
     if "/rigetti/" in dev.value:
@@ -46,29 +52,33 @@ def make_device_params(c: Circuit, dev: 'Device') -> str:
 
 
 class BraketResult(AbstractResult):
+    """Result of braket executed task"""
     def __init__(self, result_obj: Dict[str, Any]) -> None:
         jsonized = json.dumps(result_obj)
         self.result = GateModelQuantumTaskResult.from_string(jsonized)
-        self.ordered_shots = None
+        self.ordered_shots = None  # type: Optional[typing.Counter[str]]
 
-    def _update_ordered_shots(self):
+    def _update_ordered_shots(self) -> None:
         n_qubits = self.result.task_metadata.deviceParameters.paradigmParameters.qubitCount
         if self.result.measured_qubits == list(range(n_qubits)):
             self.ordered_shots = self.result.measurement_counts
         else:
             measured = self.result.measured_qubits
+
             def conv(key):
                 out = ['0'] * n_qubits
                 for k, m in zip(key, measured):
                     out[m] = k
                 return ''.join(out)
 
-            self.ordered_shots = Counter({conv(k): v for k, v in self.result.measurement_counts.items()})
+            self.ordered_shots = Counter({
+                conv(k): v
+                for k, v in self.result.measurement_counts.items()
+            })
 
     def shots(self) -> typing.Counter[str]:
         if self.ordered_shots is None:
             self._update_ordered_shots()
-
         return self.ordered_shots
 
 

@@ -1,7 +1,7 @@
 """Module for task."""
 from time import sleep
 import typing
-from typing import List, Optional, SupportsIndex, overload
+from typing import List, Optional, SupportsIndex, TypedDict, overload
 
 from .data import Status, TaskData, TaskListData
 if typing.TYPE_CHECKING:
@@ -23,6 +23,12 @@ class AbstractTask:
 
     def result(self) -> Optional['AbstractResult']:
         """Return the result if it is ready."""
+
+
+class CloudTaskOptions(TypedDict, total=False):
+    """Executing options for CloudTask"""
+    send_email: bool
+    group: str
 
 
 class CloudTask(AbstractTask):
