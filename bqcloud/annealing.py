@@ -2,17 +2,16 @@
 
 from dataclasses import dataclass
 from typing import Any, Dict, List
+import pandas as pd
 
 
 @dataclass
 class AnnealingResult:
     """Result for annealing."""
-    solutions: List[List[int]]
-    solutionCounts: List[int]
-    values: List[float]
-    variableCount: int
-    taskMetadata: Dict[str, Any]
-    additionalMetadata: Dict[str, Any]
+    task: Dict[str, Any]
+
+    def table(self) -> pd.DataFrame:
+        return pd.read_json(self.task['dataframe']).sort_values('energy')
 
 
 class AnnealingTask:

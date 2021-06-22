@@ -87,7 +87,7 @@ class Api:
             "chain_strength": chain_strength,
             "num_reads": num_reads
         })
-        return AnnealingResult(**res)
+        return AnnealingResult(res['task'])
 
     def execute(
         self,
