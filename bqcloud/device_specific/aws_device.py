@@ -10,7 +10,7 @@ from bqbraket.backend import BASIS
 from braket.device_schema import GateModelParameters
 from braket.device_schema.ionq import IonqDeviceParameters
 from braket.device_schema.rigetti import RigettiDeviceParameters
-#from braket.device_schema.simulators import GateModelSimulatorDeviceParameters
+from braket.device_schema.simulators import GateModelSimulatorDeviceParameters
 from braket.tasks import GateModelQuantumTaskResult
 
 from ..data import ExecutionRequest
@@ -48,6 +48,9 @@ def make_device_params(c: Circuit, dev: 'Device') -> str:
             paradigmParameters=paradigm_params).json()
     if "/ionq/" in dev.value:
         return IonqDeviceParameters(paradigmParameters=paradigm_params).json()
+    if "/amazon/" in dev.value:
+        return GateModelSimulatorDeviceParameters(
+            paradigmParameters=paradigm_params).json()
     raise ValueError("Unknown AWS device.")
 
 
