@@ -1,3 +1,9 @@
+# 0.0.7 - 2021-06-22
+## Bug fix & destructive changes
+- `Api.annealing()` was broken due to annealing server side specifications were changed.
+    - Now, it is work but interface is changed.
+    - `api.annealing(...).table()` returns Pandas DataFrame.
+
 # 0.0.6 - 2021-06-22
 ## Destructive changes
 - Arguments `group` and `send_email` of `Api.execute()` are removed.
