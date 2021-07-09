@@ -1,6 +1,9 @@
 # Blueqat cloud SDK (bqcloud)
 Client SDK for Blueqat cloud.
 
+## Install
+`pip install blueqat-cloud`
+
 # Handling API key
 ## Register API
 ```py
