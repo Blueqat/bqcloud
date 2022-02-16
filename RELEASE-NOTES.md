@@ -1,3 +1,11 @@
+# 0.0.9 - 2022-02-16
+## Maintenance
+- Add Aspen-m-1 device, Device.AspenM1.
+
+# 0.0.8 - 2021-12-27
+## Maintenance
+- Due to retirement of machines, only Device.Aspen11 is available for Rigetti device.
+
 # 0.0.7 - 2021-06-22
 ## Bug fix & destructive changes
 - `Api.annealing()` was broken due to annealing server side specifications were changed.
