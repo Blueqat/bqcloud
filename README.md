@@ -81,10 +81,3 @@ print(list(tasks))
 if tasks[0].result() is not None:
     print(tasks[0].result().shots())
 ```
-
-# Annealing
-```py
-import bqcloud
-api = bqcloud.load_api()
-api.annealing([[-1, 0], [0, 0.5]], 5, 10)
-```
