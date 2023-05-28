@@ -27,6 +27,14 @@ import bqcloud
 api = bqcloud.load_api()
 ```
 
+# Available Machines
+```py
+IonQAria1
+IonQHarmony
+OqcLucy
+AspenM3
+```
+
 # Gate
 
 ## Create a task
